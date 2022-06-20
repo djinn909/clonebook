@@ -4,6 +4,7 @@ const passport = require('passport');
 
 const user_controller = require('../controllers/userController'); 
 const post_controller = require('../controllers/postController'); 
+const comment_controller = require('../controllers/commentController'); 
 
 /* GET home page. */
 router.get('/home',passport.authenticate("jwt", { session: false }), function(req, res, next) {
@@ -38,16 +39,30 @@ router.put('/posts/:id' , passport.authenticate("jwt", { session: false }), post
 
 router.get('/profile' , passport.authenticate("jwt", { session: false }), post_controller.getProfilePosts); 
 
-
 router.put('/users/:id' , passport.authenticate("jwt", { session: false }), user_controller.sendFriendRequest); 
 
-router.get('/users/own' , passport.authenticate("jwt", { session: false }), user_controller.getOwnDetail); 
+router.get('/own' , passport.authenticate("jwt", { session: false }), user_controller.getOwnDetail); 
 
-router.get('/requests' , passport.authenticate("jwt", { session: false }), user_controller.findUsersRequests); 
+router.put('/requests' , passport.authenticate("jwt", { session: false }), user_controller.findUsersRequests); 
 
-router.put('/requests' , passport.authenticate("jwt", { session: false }), user_controller.acceptRequest); 
+router.put('/getrequests' , passport.authenticate("jwt", { session: false }), user_controller.acceptRequest); 
 
-router.delete('/requests' , passport.authenticate("jwt", { session: false }), user_controller.rejectRequest);
+router.delete('/requests' , passport.authenticate("jwt", { session: false }), user_controller.rejectRequest); 
+
+router.get('/timeline' , passport.authenticate("jwt", { session: false }), post_controller.getFriendsPosts);  
+
+router.get('/allusers' , passport.authenticate("jwt", { session: false }), user_controller.getAllUsers);  
+
+router.get('/users/:id/posts' , passport.authenticate("jwt", { session: false }), post_controller.getUserPosts);  
+
+
+router.put('/posts/:id/like' , passport.authenticate("jwt", { session: false }), post_controller.likePost); 
+
+
+
+router.post('/comment' , passport.authenticate("jwt", { session: false }), comment_controller.createComment); 
+
+router.get('/posts/:id/comments' , passport.authenticate("jwt", { session: false }), comment_controller.findComments);
 
 module.exports = router;
 

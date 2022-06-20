@@ -3,6 +3,8 @@ const { body, validationResult } = require("express-validator");
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); 
+const async = require('async'); 
+const mongoose = require('mongoose');
 
 
 exports.signup = [
@@ -87,6 +89,7 @@ exports.getAllUsers = (req, res, next) => {
 
 exports.getUserDetail = (req, res, next) => {
   User.findById(req.params.id)
+  
   .exec((err, result) => {
       if (err) { return next(err)}
       else{
@@ -96,6 +99,7 @@ exports.getUserDetail = (req, res, next) => {
 } 
 
 exports.getOwnDetail = (req, res, next) => {
+  //let id = mongoose.Types.ObjectId(req.user)
   User.find(req.user)
   .exec((err, result) => {
       if (err) { return next(err)}
@@ -116,27 +120,58 @@ exports.sendFriendRequest = (req, res, next) => {
   })
 } 
 
-exports.findUsersRequests = (req, res, next) => {
-  User.find().where('_id').in(req.user.friend_requests)
+exports.findUsersRequests = (req, res, next) => { 
+  User.findById(req.body.userid)
+  .exec((err, result) => {
+    if (err) { return next(err)}
+    else {
+      User.find().where('_id').in(result.friend_requests)
   .exec((err, result) => {
       if (err) { return next(err)}
       else{
+          
           res.status(200).json(result)
       }
   })
+    }
+  })
+  
 } 
 
+
+
+
+
 exports.acceptRequest = (req, res, next) => {
-  User.findByIdAndUpdate(req.user._id , {$addToSet: {friends: req.body.id}})
-  User.findByIdAndUpdate(req.body.id , {$addToSet: {friends: req.user._id}})
-  User.findByIdAndDelete(req.user._id , {$pull: {friend_requests: req.body.id}})
-  .exec((err, result) => {
-      if (err) { return next(err)}
-      else{
-          res.status(200).json(result)
+  async.parallel({
+      userReceiver: (callback) => {
+          User.findByIdAndUpdate(req.user._id, {
+              $push : { friends: req.body.id },
+              $pull: {friend_requests: req.body.id}
+          })
+          .exec(callback);
+      },
+      userSender: (callback) => {
+          User.findByIdAndUpdate(req.body.id, {
+              $push : {friends: req.user._id},
+              
+          })
+          .exec(callback);
       }
+  }, (err, results) => {
+      if (err) { return next(err)}
+      if (results.userReceiver === null || results.userSender === null) {
+          let err = new Error('Post not found');
+          err.status = 404;
+          return next(err);
+      }
+      res.status(201).json({msg: 'Request Accepted'});
   })
-}  
+}
+
+
+
+
 
 exports.rejectRequest = (req, res, next) => {
   User.findByIdAndDelete(req.user._id , {$pull: {friend_requests: req.body.id}})
@@ -157,3 +192,4 @@ exports.findUserFriends = (req, res, next) => {
       }
   })
 } 
+

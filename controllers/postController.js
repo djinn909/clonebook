@@ -22,6 +22,7 @@ exports.createPost = (req, res, next) => {
 
 exports.getPostDetail = (req, res, next) => {
     Post.findById(req.params.id)
+    .populate('user')
     .exec((err, result) => {
         if (err) {return (next(err))}
         else {res.status(200).json(result)}
@@ -42,6 +43,18 @@ exports.getAllPosts = (req, res, next) => {
 exports.getProfilePosts = (req , res , next ) => {
 Post.find({user: req.user._id })
     .populate('user')
+    .exec((err, result ) => {
+        if (err) {return next (err)} 
+        else {
+            res.status(200).json(result)
+        }
+    })
+} 
+
+exports.getUserPosts = (req, res, next) => {
+    Post.find({user: req.params.id}) 
+    .populate('user') 
+    .sort({timestamp:-1}) 
     .exec((err, result ) => {
         if (err) {return next (err)} 
         else {
@@ -70,3 +83,34 @@ exports.editPost = (req, res, next) => {
         res.json({msg: 'Post updated'})
     })
 } 
+
+
+exports.getFriendsPosts = (req, res, next) => {
+    Post.find().where('user').in(req.user.friends)
+    .populate('user')
+    .sort({timestamp:-1}) 
+    .exec((err, result ) => {
+        if (err) {return next (err)} 
+        else {
+            res.status(200).json(result)
+        }
+    })
+} 
+
+exports.likePost = (req, res, next) => {
+    Post.findById(req.body.post)
+    .exec((err, post) => {
+        if (err) { return next(err)}
+        if (post.likes.includes(req.body.user._id)) {
+            post.likes.pull(req.body.user._id);
+            post.save();
+            res.status(201).json({msg: 'Like removed'});
+        }
+        else {
+            post.likes.push(req.body.user._id
+                );
+            post.save();
+            res.status(201).json({msg: 'Like added'});
+        }
+    })
+}

@@ -8,6 +8,7 @@ const User = require('./models/user');
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 
+
 passport.use(
     new LocalStrategy((username, password, done) => {
         User.findOne({ username }, (err, user) => {
@@ -38,4 +39,5 @@ passport.use(
             }
         }
     )
-);
+); 
+

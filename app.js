@@ -8,6 +8,7 @@ var logger = require('morgan');
 var bodyParser = require('body-parser'); 
 var cors = require('cors'); 
 const passport    = require('passport'); 
+const session = require('express-session');
 
 
 
@@ -43,7 +44,20 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(passport.initialize()); 
+
+//app.use(session({secret: 'your_jwt_secret', resave: false, saveUninitialized: true}));
+app.use(express.static(path.join(__dirname, 'public'))); 
+
+passport.serializeUser(function(user, done) {
+  done(null, user._id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});
 
 app.use('/', index);
 
