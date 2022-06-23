@@ -13,6 +13,7 @@ exports.createPost = (req, res, next) => {
     const newPost = new Post({
         text: req.body.text,
         user: req.user._id,
+        image: req.body.image
     })
     newPost.save((err) => {
         if (err) { return next(err)}
@@ -43,6 +44,7 @@ exports.getAllPosts = (req, res, next) => {
 exports.getProfilePosts = (req , res , next ) => {
 Post.find({user: req.user._id })
     .populate('user')
+    .sort({timestamp:-1}) 
     .exec((err, result ) => {
         if (err) {return next (err)} 
         else {

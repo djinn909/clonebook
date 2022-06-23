@@ -19,7 +19,13 @@ exports.signup = [
       return true;
     }),
     (req,res,next)=>{
-      const errors = validationResult(req);
+      User.findOne({'username': req.body.username})
+      .exec((err , foundUser) => {
+        if (err) {return next(err)}
+        if (foundUser) {
+          return res.json({msg: 'Email already used'})
+        } else {
+          const errors = validationResult(req);
       if(!errors.isEmpty()){
         res.json({
           username: req.body.username,
@@ -48,6 +54,9 @@ exports.signup = [
           })
         });
       }
+        }
+      })
+      
     }
   ];
   
@@ -100,7 +109,7 @@ exports.getUserDetail = (req, res, next) => {
 
 exports.getOwnDetail = (req, res, next) => {
   //let id = mongoose.Types.ObjectId(req.user)
-  User.find(req.user)
+  User.findById(req.user._id)
   .exec((err, result) => {
       if (err) { return next(err)}
       else{
@@ -136,6 +145,13 @@ exports.findUsersRequests = (req, res, next) => {
     }
   })
   
+} 
+
+exports.editPicture = (req, res, next) => {
+  User.findByIdAndUpdate(req.body.id, {picture: req.body.picture}, (err) => {
+      if (err) { return next(err) }
+      res.json({msg: 'Picture updated'})
+  })
 } 
 
 
@@ -183,13 +199,22 @@ exports.rejectRequest = (req, res, next) => {
   })
 } 
 
-exports.findUserFriends = (req, res, next) => {
-  User.find().where('_id').in(req.user.friends)
+
+
+exports.findUsersFriends = (req, res, next) => { 
+  User.findById(req.user._id)
+  .exec((err, result) => {
+    if (err) { return next(err)}
+    else {
+      User.find().where('_id').in(result.friends)
   .exec((err, result) => {
       if (err) { return next(err)}
       else{
+          
           res.status(200).json(result)
       }
   })
+    }
+  })
+  
 } 
-

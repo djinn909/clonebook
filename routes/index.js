@@ -55,14 +55,20 @@ router.get('/allusers' , passport.authenticate("jwt", { session: false }), user_
 
 router.get('/users/:id/posts' , passport.authenticate("jwt", { session: false }), post_controller.getUserPosts);  
 
+router.get('/users/:id/posts' , passport.authenticate("jwt", { session: false }), post_controller.getUserPosts); 
 
-router.put('/posts/:id/like' , passport.authenticate("jwt", { session: false }), post_controller.likePost); 
+
+router.put('/profile' , passport.authenticate("jwt", { session: false }), user_controller.editPicture); 
 
 
 
 router.post('/comment' , passport.authenticate("jwt", { session: false }), comment_controller.createComment); 
 
-router.get('/posts/:id/comments' , passport.authenticate("jwt", { session: false }), comment_controller.findComments);
+router.get('/posts/:id/comments' , passport.authenticate("jwt", { session: false }), comment_controller.findComments); 
+
+router.get('/friends' , passport.authenticate("jwt", { session: false }), user_controller.findUsersFriends);  
+
+router.put('/posts/:id/like' , passport.authenticate("jwt", { session: false }), post_controller.likePost); 
 
 module.exports = router;
 
